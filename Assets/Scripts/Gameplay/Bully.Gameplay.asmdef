@@ -2,7 +2,8 @@
     "name": "Bully.Gameplay",
     "rootNamespace": "Bully.Gameplay",
     "references": [
-        "GUID:a47b5bf4a8f555346afba85309576a21"
+        "GUID:a47b5bf4a8f555346afba85309576a21",
+        "GUID:75469ad4d38634e559750d17036d5f7c"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
