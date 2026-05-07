@@ -7,43 +7,86 @@ namespace Bully.Gameplay
     public class StalkerAI : MonoBehaviour
     {
         [SerializeField] private EnemyDataSO data;
+        [SerializeField] private float stoppingDistance = 1.2f;
         
         private Rigidbody2D rb;
-        private Transform playerTarget;
+        private Transform playerTransform; // Pour le check d'attaque précis
+        private Vector3 lastKnownPosition;
+        private bool hasTarget = false;
         private float nextAttackTime;
 
         private void Awake()
         {
             rb = GetComponent<Rigidbody2D>();
-            // On cherche le joueur via le tag (assure-toi que ton Player a le tag "Player")
+            
+            // On récupère quand même la référence du transform pour l'attaque, 
+            // mais on ne l'utilise pas pour le mouvement.
             GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null) playerTarget = player.transform;
+            if (player != null) playerTransform = player.transform;
+        }
+
+        private void OnEnable()
+        {
+            // S'abonne aux cris du Snitcher
+            BullyEvents.OnPlayerSpotted += UpdateTargetPosition;
+        }
+
+        private void OnDisable()
+        {
+            // Se désabonne
+            BullyEvents.OnPlayerSpotted -= UpdateTargetPosition;
+        }
+
+        private void UpdateTargetPosition(Vector3 pos)
+        {
+            lastKnownPosition = pos;
+            hasTarget = true;
         }
 
         private void FixedUpdate()
         {
-            if (playerTarget == null) return;
+            // Si personne n'a balancé le joueur, on ne bouge pas
+            if (!hasTarget) return;
 
-            MoveTowardsPlayer();
+            float distanceToLastPos = Vector2.Distance(transform.position, lastKnownPosition);
+
+            // 1. MOUVEMENT vers la dernière position connue
+            if (distanceToLastPos > stoppingDistance)
+            {
+                MoveTowardsLocation(lastKnownPosition);
+            }
+            else
+            {
+                rb.linearVelocity = Vector2.zero;
+            }
+
+            // 2. ATTAQUE (uniquement si le vrai joueur est à portée)
+            if (playerTransform != null)
+            {
+                float actualDistanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
+                float maxAttackDistance = stoppingDistance + data.attackRange;
+
+                if (actualDistanceToPlayer <= maxAttackDistance && Time.time >= nextAttackTime)
+                {
+                    AttackPlayer();
+                }
+            }
         }
 
-        private void MoveTowardsPlayer()
+        private void MoveTowardsLocation(Vector3 targetPos)
         {
-            Vector2 direction = (playerTarget.position - transform.position).normalized;
+            Vector2 direction = ((Vector2)targetPos - rb.position).normalized;
             rb.linearVelocity = direction * data.moveSpeed;
         }
 
-        private void OnCollisionStay2D(Collision2D collision)
+        private void AttackPlayer()
         {
-            // Vérifie si on touche quelque chose qui peut prendre des dégâts
-            if (Time.time >= nextAttackTime)
+            if (playerTransform.TryGetComponent<IDamageable>(out var damageable))
             {
-                if (collision.gameObject.TryGetComponent<IDamageable>(out var damageable))
-                {
-                    damageable.TakeDamage(data.attackDamage);
-                    nextAttackTime = Time.time + data.attackCooldown;
-                    Debug.Log("Le Stalker a frappé !");
-                }
+                damageable.TakeDamage(data.attackDamage);
+                nextAttackTime = Time.time + data.attackCooldown;
+                // Debug.Log pour confirmer l'attaque
+                Debug.Log("<color=red>Le Stalker frappe le joueur !</color>");
             }
         }
     }

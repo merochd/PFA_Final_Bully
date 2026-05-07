@@ -55,6 +55,7 @@ namespace Bully.Gameplay
             {
                 BullyEvents.TriggerAnchoringDepleted();
             }
+            Debug.Log($"<color=cyan>Dégâts subis: {finalDamage} | Anchoring restant: {_currentAnchoring}</color>");
         }
 
         public void RestoreAnchoring(int amount)

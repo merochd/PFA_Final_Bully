@@ -9,5 +9,6 @@ namespace Bully.Core
         public int attackDamage = 10;
         public float attackCooldown = 1.5f;
         public float detectionRange = 10f;
+        public float attackRange = 1.5f; // Doit être légèrement supérieur à stoppingDistance
     }
 }
