@@ -1,11 +1,11 @@
 using System;
-using UnityEngine; // Nécessaire pour Vector3
+using UnityEngine;
 
 namespace Bully.Core
 {
     public static class BullyEvents
     {
-        // --- ANCHORING ---
+        // --- ANCHORING (Santé Mentale) ---
         public static Action<int, int> OnAnchoringChanged; 
         public static Action OnAnchoringDepleted;
 
@@ -14,14 +14,32 @@ namespace Bully.Core
         public static Action OnRoundEnd;
 
         // --- DETECTION & AI ---
-        // On passe la position (Vector3) du joueur pour que les ennemis sachent où aller
         public static Action<Vector3> OnPlayerSpotted;
 
+        // --- EQUIPMENT & DEBUFFS ---
+        // true = possédé/actif, false = perdu/cassé
+        public static Action<bool> OnPhoneStateChanged;    // Gère la Minimap
+        public static Action<bool> OnGlassesStateChanged;  // Gère la reconnaissance visuelle
+        public static Action<bool> OnHeadsetStateChanged;  // Gère la régénération d'ancrage
+        
+        // Optionnel : Pour afficher un message UI lors de la perte
+        public static Action<string> OnItemLostFeedback;
+
         // --- TRIGGERS ---
+        
+        // Anchoring
         public static void TriggerAnchoringChanged(int current, int max) => OnAnchoringChanged?.Invoke(current, max);
         public static void TriggerAnchoringDepleted() => OnAnchoringDepleted?.Invoke();
         
-        // Nouvelle méthode pour que le Snitcher puisse "crier" la position
+        // AI
         public static void TriggerPlayerSpotted(Vector3 position) => OnPlayerSpotted?.Invoke(position);
+
+        // Equipment Triggers
+        public static void TriggerPhoneStateChanged(bool state) => OnPhoneStateChanged?.Invoke(state);
+        public static void TriggerGlassesStateChanged(bool state) => OnGlassesStateChanged?.Invoke(state);
+        public static void TriggerHeadsetStateChanged(bool state) => OnHeadsetStateChanged?.Invoke(state);
+        
+        // Feedback Trigger
+        public static void TriggerItemLostFeedback(string itemName) => OnItemLostFeedback?.Invoke(itemName);
     }
 }
