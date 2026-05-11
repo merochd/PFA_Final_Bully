@@ -11,7 +11,8 @@ namespace Bully.Gameplay
         
         private Rigidbody2D rb;
         private Vector2 movementInput;
-        private bool isCowering;
+        public bool isCowering { get; private set; }
+        public bool IsRestricted { get; set; }
 
         public bool IsCowering => isCowering; // Pour que le HealthHandler puisse le lire
 
@@ -27,6 +28,12 @@ namespace Bully.Gameplay
 
         private void FixedUpdate()
         {
+            if (IsRestricted)
+            {
+                // On force la vitesse à zéro pour stopper net l'inertie
+                rb.linearVelocity = Vector2.zero;
+                return;
+            }
             MovePlayer();
         }
 
